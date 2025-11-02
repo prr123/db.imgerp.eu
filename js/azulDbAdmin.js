@@ -18,6 +18,137 @@ async function postData(url, data) {
   }
 }
 
+const dbDispPers = {
+
+    subButRObj: {
+        text: 'submit test',
+        style: {
+            display: 'block',
+            textAlign: 'center',
+            width: '200px',
+            margin: '20px auto',
+        },
+    },
+
+    gridObj: {
+        nrow: 3,
+        ncol: 1,
+		cols: '1 fr',
+        matrix: [[{Field: 'First', Length: '150px', idx: 1, Req: true},{Field: 'Middle', Length: '200px', idx: 2},{Field: 'Last', Length: '200px', idx: 3, Req: true}],
+        [{Field: 'Email',Length: '300px', idx: 4, Req: true}, {Field: 'Phone', Length: '200px', idx: 5}],
+        [{Field: 'Created',Length: '300px', idx: 6}, {Field: 'Edited', Length: '300px', idx: 7}]],
+        style: {
+            display: 'grid',
+            border: '1px dashed blue',
+            margin: '10px',
+        },
+        elStyle: {
+            display: 'flex',
+            flexWrap: 'wrap',
+            minHeight: '50px',
+//          margin: '5px',
+            outline: '1px dashed magenta',
+//          border: '1px dashed green',
+        },
+    },
+
+    butNavObj: {
+        style: {
+            background: 'none',
+            border: '1px solid black',
+            padding: '0 10px 0 10px',
+            cursor: 'pointer',
+        },
+        typ: 'button',
+    },
+
+    itemObj: {
+        style: {
+            border: '1px dashed orange',
+            margin: '5px',
+            minWidth: '100px',
+            textAlign: 'center',
+            },
+        typ: 'div',
+	},
+
+	rendPrevNxt() {
+		const pnDiv = document.createElement('div');
+		pnDiv.style.display = 'flex';
+		pnDiv.style.border = '1px dashed green';
+		pnDiv.style.justifyContent = 'space-between';
+
+        const butNavObj1 = {textContent: 'Prev'};
+        Object.assign(butNavObj1, this.butNavObj);
+        const navBut1 = azul.addElement(butNavObj1);
+        this.navBut1 = navBut1;
+
+        const butNavObj2 = {textContent: 'Next'};
+        Object.assign(butNavObj2, this.butNavObj);
+        const navBut2 = azul.addElement(butNavObj2);
+        this.navBut2 = navBut2;
+
+		let item1 = azul.addElement(this.itemObj);
+        item1.appendChild(navBut1);
+        pnDiv.appendChild(item1);
+
+        let item2 = azul.addElement(this.itemObj);
+        item2.appendChild(navBut2);
+        pnDiv.appendChild(item2);
+
+		return pnDiv;
+	},
+
+    rendGrid(pers) {
+
+//      namegrid is a div element
+		const hasDat = true;
+		if (pers === null) {hasDat = false;}
+        const namgrid = azul.addGrid(this.gridObj);
+
+        namgrid.nrow = this.gridObj.matrix.length;
+        namgrid.ncol = 1;
+
+        namgrid.inpEls = [];
+        for (let r=0; r< this.gridObj.matrix.length; r++) {
+            for (let c=0; c< this.gridObj.matrix[r].length; c++) {
+                let inpEl = new azulInp(this.gridObj.matrix[r][c]);
+                namgrid.inpEls.push(inpEl);
+                namgrid.els[r][0].appendChild(inpEl.inpDiv);
+//                namgrid.els[r].appendChild(inpel.inpDiv);
+            }
+        }
+        let elcnt = namgrid.inpEls.length
+		if (hasDat) {
+			namgrid.inpEls[0].inpDiv.inp.value = pers.First;
+			namgrid.inpEls[0].inpDiv.lab.style.visibility = 'visible';
+			namgrid.inpEls[1].inpDiv.inp.value = pers.Middle;
+			namgrid.inpEls[1].inpDiv.lab.style.visibility = 'visible';
+			namgrid.inpEls[2].inpDiv.inp.value = pers.Last;
+			namgrid.inpEls[2].inpDiv.lab.style.visibility = 'visible';
+		}
+
+        for (let i=0; i< elcnt; i++) {
+            let inxt = i +1;
+            if (inxt>elcnt-1) {inxt=0;}
+            let iprv = i - 1;
+            if (iprv<0) {iprv=elcnt-1;}
+            InpSetNextPrev(namgrid.inpEls[i].inpDiv.inp, namgrid.inpEls[inxt].inpDiv.inp, namgrid.inpEls[iprv].inpDiv.inp);
+        }
+
+		this.gridDiv = namgrid;
+        return namgrid;
+    },
+
+	dispNext() {
+
+	},
+
+	dispPrev() {
+
+	}
+};
+
 const dbData = {
 
     subButRObj: {
@@ -54,9 +185,6 @@ const dbData = {
     rendGrid() {
 
 //      namegrid is a div element
-//        this.gridObj.rows = this.gridObj.matrix.length;
-//        this.gridObj.cols = 1;
-
         const namgrid = azul.addGrid(this.gridObj);
 
         namgrid.nrow = this.gridObj.matrix.length;
@@ -287,8 +415,10 @@ const dbList = {
 	},
 
 	linfun(ir) {
-		const id = dbList.list[ir-1].Id;
-		console.log("row: " + ir + " id: " + id);
+		const pers = dbList.list[ir-1];
+
+		console.log("row: " + ir + " id: " + pers.Id);
+		dbDisp.renFun(pers);
 	},
 
 
@@ -376,7 +506,7 @@ const dbUpd = {
     },
 
 
-	renFun() {
+	renFun(pers) {
 		console.log('update');
 		const ldiv = dbUpd.render();
 		azul.rplDiv(azulSPA.db, ldiv);
@@ -409,10 +539,37 @@ const dbSearch = {
 
 };
 
+const dbDisp = {
+    render(pers) {
+		const root = document.createElement('div')
+		dbNew.parObj.textContent = 'Display Person';
+        const txtel = azul.addElement(dbNew.parObj);
+        root.appendChild(txtel);
+		const parEl = document.createElement('p');
+		parEl.style.margin='10px';
+		parEl.textContent = 'Status: not submitted';
+		root.appendChild(parEl);
+		this.Status = parEl;
+		const divPN = dbDispPers.rendPrevNxt()
+		root.appendChild(divPN);
+  		const gdiv = dbDispPers.rendGrid(pers);
+		root.appendChild(gdiv);
+		const subDiv = dbData.subDiv;
+        root.appendChild(subDiv);
+        return root;
+    },
+
+	renFun(pers) {
+		console.log('disp: click!');
+		const ldiv = dbDisp.render(pers);
+		azul.rplDiv(azulSPA.db, ldiv);
+	}
+};
 
 dbData.rendGrid();
 dbData.rendSubmit();
 //dbNew.renFun();
+//azulSPA.dispPer = dbDispPers.rendGrid();
 
 dbMain.navBut1.addEventListener('click', dbList.renFun);
 dbMain.navBut2.addEventListener('click',dbNew.renFun);
