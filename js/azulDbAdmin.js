@@ -126,6 +126,10 @@ const dbDispPers = {
 			namgrid.inpEls[1].inpDiv.lab.style.visibility = 'visible';
 			namgrid.inpEls[2].inpDiv.inp.value = pers.Last;
 			namgrid.inpEls[2].inpDiv.lab.style.visibility = 'visible';
+			namgrid.inpEls[3].inpDiv.inp.value = pers.Email;
+			namgrid.inpEls[3].inpDiv.lab.style.visibility = 'visible';
+//			namgrid.inpEls[4].inpDiv.inp.value = pers.Phone;
+//			namgrid.inpEls[4].inpDiv.lab.style.visibility = 'visible';
 		}
 
         for (let i=0; i< elcnt; i++) {
@@ -150,7 +154,8 @@ const dbDispPers = {
 };
 
 const dbData = {
-
+	state: 'new',
+	
     subButRObj: {
         text: 'submit test',
         style: {
@@ -166,7 +171,7 @@ const dbData = {
         ncol: 1,
 		cols: '1 fr',
         matrix: [[{Field: 'First', Length: '150px', idx: 1, Req: true},{Field: 'Middle', Length: '200px', idx: 2},{Field: 'Last', Length: '200px', idx: 3, Req: true}],
-        [{Field: 'Email',Length: '250px', idx: 4, Req: true}]],
+        [{Field: 'Email',Length: '300px', idx: 4, Req: true},{Field: 'Phone',Length: '250px', idx: 5}]],
         style: {
             display: 'grid',
             border: '1px dashed blue',
@@ -229,7 +234,7 @@ const dbData = {
             Middle: namesObj.inpels[1].getInpValue(),
             Last: namesObj.inpels[2].getInpValue(),
             Email: namesObj.inpels[3].getInpValue(),
-//            Phone: namesObj.inp5.getInpValue(),
+//            Phone: namesObj.inpels[4].getInpValue(),
         };
         const inpJsonStr = JSON.stringify(inpVal)
         console.log('hello inp: ' + inpJsonStr);
@@ -319,7 +324,7 @@ const dbNew = {
 
     // root is a div
     render() {
-		const root = document.createElement('div')
+		const root = document.createElement('div');
         const txtel = azul.addElement(this.parObj);
         root.appendChild(txtel);
 		const parEl = document.createElement('p');
@@ -338,6 +343,7 @@ const dbNew = {
 		console.log('add: click!');
 		const ldiv = dbNew.render();
 		azul.rplDiv(azulSPA.db, ldiv);
+		dbData.state = 'add';
 	}
 };
 
@@ -416,8 +422,8 @@ const dbList = {
 
 	linfun(ir) {
 		const pers = dbList.list[ir-1];
-
-		console.log("row: " + ir + " id: " + pers.Id);
+		dbData.pers = pers;
+//		console.log("row: " + ir + " id: " + pers.Id);
 		dbDisp.renFun(pers);
 	},
 
@@ -454,8 +460,9 @@ const dbList = {
 
 	renFun() {
 		console.log('list: click!');
-		// get db data
+		// get 
 		dbList.getData();
+		dbData.state = 'list';
 	},
 
 	async getData() {
@@ -471,7 +478,6 @@ const dbList = {
 	    	if (response.ok) {
 				console.log('Post Reply Success');
 				const list = await response.json();
-//		console.log('resp list: ' + list.length);
 				const ldiv = dbList.render(list);
 				azul.rplDiv(azulSPA.db, ldiv);
 				return;
@@ -486,6 +492,22 @@ const dbList = {
 
 const dbUpd = {
 
+	subFunc(inpEls) {
+		console.log('submit upd: ' + inpEls.length);
+
+	},
+
+	rendSubmit() {
+		const subDiv = document.createElement('div');
+        const subBut = new azulButton(dbData.subButRObj);
+//		this.subButEl = subBut.el;
+		subBut.el.textContent = 'submit update';
+        subBut.el.addEventListener('click', function() {dbUpd.subFunc(dbData.gridDiv.inpEls);},false);
+		subDiv.appendChild(subBut.el);
+//		this.subDiv= subDiv;
+		return subDiv;
+	},
+
 
     render() {
 		const root = document.createElement('div')
@@ -494,26 +516,60 @@ const dbUpd = {
         root.appendChild(txtel);
 		const parEl = document.createElement('p');
 		parEl.style.margin='10px';
-		parEl.textContent = 'Status: not submitted';
+		const pers = dbData.pers;
+		if (pers == null) {
+			parEl.textContent = 'Status: no person to be updated!';
+			root.appendChild(parEl);
+			return root;
+		}
+		parEl.textContent = 'Status: update not submitted!';
 		root.appendChild(parEl);
 		this.Status = parEl;
+//upd
+//        const gDiv = dbData.gridDiv;
+		const namgrid = dbData.gridDiv;
+			namgrid.inpEls[0].inpDiv.inp.value = pers.First;
+			namgrid.inpEls[0].inpDiv.lab.style.visibility = 'visible';
+			namgrid.inpEls[1].inpDiv.inp.value = pers.Middle;
+			namgrid.inpEls[1].inpDiv.lab.style.visibility = 'visible';
+			namgrid.inpEls[2].inpDiv.inp.value = pers.Last;
+			namgrid.inpEls[2].inpDiv.lab.style.visibility = 'visible';
+			namgrid.inpEls[3].inpDiv.inp.value = pers.Email;
+			namgrid.inpEls[3].inpDiv.lab.style.visibility = 'visible';
+//			namgrid.inpEls[4].inpDiv.inp.value = pers.Phone;
+//			namgrid.inpEls[4].inpDiv.lab.style.visibility = 'visible';
 
-        const gDiv = dbData.gridDiv;
-        root.appendChild(gDiv);
-		const subDiv = dbData.subDiv;
+		root.appendChild(namgrid);
+		const subDiv = this.rendSubmit();
         root.appendChild(subDiv);
         return root;
     },
 
 
-	renFun(pers) {
+	renFun() {
 		console.log('update');
 		const ldiv = dbUpd.render();
 		azul.rplDiv(azulSPA.db, ldiv);
+		dbData.state = 'upd';
 	},
 };
 
 const dbSearch = {
+	subFunc(inpEls) {
+		console.log('submit search: ' + inpEls.length);
+
+	},
+
+	rendSubmit() {
+		const subDiv = document.createElement('div');
+        const subBut = new azulButton(dbData.subButRObj);
+//		this.subButEl = subBut.el;
+		subBut.el.textContent = 'submit search';
+        subBut.el.addEventListener('click', function() {dbSearch.subFunc(dbData.gridDiv.inpEls);},false);
+		subDiv.appendChild(subBut.el);
+//		this.subDiv= subDiv;
+		return subDiv;
+	},
 
 	render() {
 		const root = document.createElement('div')
@@ -524,8 +580,11 @@ const dbSearch = {
 		parEl.style.margin='10px';
 		parEl.textContent = 'Status: not submitted';
 		root.appendChild(parEl);
-//		this.Status = parEl;
-		const subDiv = dbData.subDiv;
+
+        const gDiv = dbData.gridDiv;
+        root.appendChild(gDiv);
+
+		const subDiv = this.rendSubmit();
         root.appendChild(subDiv);
         return root;
 
@@ -554,8 +613,8 @@ const dbDisp = {
 		root.appendChild(divPN);
   		const gdiv = dbDispPers.rendGrid(pers);
 		root.appendChild(gdiv);
-		const subDiv = dbData.subDiv;
-        root.appendChild(subDiv);
+//		const subDiv = dbData.subDiv;
+//        root.appendChild(subDiv);
         return root;
     },
 
@@ -563,6 +622,7 @@ const dbDisp = {
 		console.log('disp: click!');
 		const ldiv = dbDisp.render(pers);
 		azul.rplDiv(azulSPA.db, ldiv);
+		dbData.state = 'disp';
 	}
 };
 
