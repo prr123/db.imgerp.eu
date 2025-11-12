@@ -492,15 +492,50 @@ const dbList = {
 
 const dbUpd = {
 
+	async postDat(url, data) {
+  		try {
+    		const response = await fetch(url, {
+      			method: 'POST',
+      			headers: {'Content-Type': 'application/json',},
+				body: data,});
+
+			if (response.ok) {
+				console.log('Success');
+				this.parEl.textContent = 'Status: update success!'
+
+				// disable submit
+				this.subButEl.disabled = true;
+    		} else {
+     			console.error('Error ' + response.status + ': ' + response.statusText);
+				this.parEl.textContent = 'Status: error -- ' + response.statusText;
+    		}
+  		} catch (error) {
+    		console.error('Error:', error.message);
+			this.parEl.textContent = 'Status: error -- ' + error.message;
+  		}
+	},
+
+
+
 	subFunc(inpEls) {
 		console.log('submit upd: ' + inpEls.length);
 
-	},
+        const inpKV = {};
+		inpKV['cmd'] = 'upd';
+        for (let i=0; i< inpEls.length; i++) {
+            const datinp = inpEls[i].inpDiv.inp;
+            inpKV[datinp.place] = datinp.value;
+        }
+        let sndDat = JSON.stringify(inpKV);
+        console.log('inpkv: ' + sndDat);
+        // send data
+        this.postDat('/db/person.json',sndDat);
+    },
 
 	rendSubmit() {
 		const subDiv = document.createElement('div');
         const subBut = new azulButton(dbData.subButRObj);
-//		this.subButEl = subBut.el;
+		this.subButEl = subBut.el;
 		subBut.el.textContent = 'submit update';
         subBut.el.addEventListener('click', function() {dbUpd.subFunc(dbData.gridDiv.inpEls);},false);
 		subDiv.appendChild(subBut.el);
@@ -514,17 +549,17 @@ const dbUpd = {
 		dbNew.parObj.textContent = 'Update Person';
         const txtel = azul.addElement(dbNew.parObj);
         root.appendChild(txtel);
-		const parEl = document.createElement('p');
-		parEl.style.margin='10px';
+		this.parEl = document.createElement('p');
+		this.parEl.style.margin='10px';
 		const pers = dbData.pers;
 		if (pers == null) {
-			parEl.textContent = 'Status: no person to be updated!';
-			root.appendChild(parEl);
+			this.parEl.textContent = 'Status: no person to be updated!';
+			root.appendChild(this.parEl);
 			return root;
 		}
-		parEl.textContent = 'Status: update not submitted!';
-		root.appendChild(parEl);
-		this.Status = parEl;
+		this.parEl.textContent = 'Status: update not submitted!';
+		root.appendChild(this.parEl);
+		this.Status = this.parEl;
 //upd
 //        const gDiv = dbData.gridDiv;
 		const namgrid = dbData.gridDiv;
@@ -555,12 +590,53 @@ const dbUpd = {
 };
 
 const dbSearch = {
+
+	async postDat(url, data) {
+  		try {
+    		const response = await fetch(url, {
+      			method: 'POST',
+      			headers: {'Content-Type': 'application/json',},
+				body: data,});
+
+			if (response.ok) {
+				console.log('Search Post Reply Success');
+				this.parEl.textContent = 'Status: search success!'
+				const list = await response.json();
+				const ldiv = dbList.render(list);
+				azul.rplDiv(azulSPA.db, ldiv);
+				return;
+			// disable submit
+//				this.subButEl.disabled = true;
+    		} else {
+     			console.error('Error ' + response.status + ': ' + response.statusText);
+				this.parEl.textContent = 'Status: error -- ' + response.statusText;
+    		}
+  		} catch (error) {
+    		console.error('Error:', error.message);
+			this.parEl.textContent = 'Status: error -- ' + error.message;
+  		}
+	},
+
+
+
 	subFunc(inpEls) {
 		console.log('submit search: ' + inpEls.length);
 
-	},
+        const inpKV = {};
+		inpKV['cmd'] = 'se';
+        for (let i=0; i< inpEls.length; i++) {
+            const datinp = inpEls[i].inpDiv.inp;
+            inpKV[datinp.place] = datinp.value;
+        }
+        let sndDat = JSON.stringify(inpKV);
+        console.log('inpkv: ' + sndDat);
+        // send data
+        this.postDat('/db/person.json',sndDat);
+    },
+
 
 	rendSubmit() {
+
 		const subDiv = document.createElement('div');
         const subBut = new azulButton(dbData.subButRObj);
 //		this.subButEl = subBut.el;
@@ -581,8 +657,24 @@ const dbSearch = {
 		parEl.textContent = 'Status: not submitted';
 		root.appendChild(parEl);
 
-        const gDiv = dbData.gridDiv;
-        root.appendChild(gDiv);
+//        const gDiv = dbData.gridDiv;
+		const namgrid = dbData.gridDiv;
+//			namgrid.inpEls[0].inpDiv.inp.value = pers.First;
+			namgrid.inpEls[0].inpDiv.inp.value = '';
+//			namgrid.inpEls[0].inpDiv.lab.style.visibility = 'visible';
+			namgrid.inpEls[1].inpDiv.inp.value = '';
+//			namgrid.inpEls[1].inpDiv.inp.value = pers.Middle;
+//			namgrid.inpEls[1].inpDiv.lab.style.visibility = 'visible';
+			namgrid.inpEls[2].inpDiv.inp.value = '';
+//			namgrid.inpEls[2].inpDiv.inp.value = pers.Last;
+//			namgrid.inpEls[2].inpDiv.lab.style.visibility = 'visible';
+			namgrid.inpEls[3].inpDiv.inp.value = '';
+//			namgrid.inpEls[3].inpDiv.inp.value = pers.Email;
+//			namgrid.inpEls[3].inpDiv.lab.style.visibility = 'visible';
+//			namgrid.inpEls[4].inpDiv.inp.value = pers.Phone;
+//			namgrid.inpEls[4].inpDiv.lab.style.visibility = 'visible';
+
+        root.appendChild(namgrid);
 
 		const subDiv = this.rendSubmit();
         root.appendChild(subDiv);

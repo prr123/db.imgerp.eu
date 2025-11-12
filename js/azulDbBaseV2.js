@@ -102,7 +102,7 @@ const dbMain = {
 			padding: '0.5em',
 			},
         id: 'blogTitle',
-        textContent: 'Azul Testing',
+        textContent: 'Azul People Db',
         typ: 'h3',
 	},
 
@@ -139,6 +139,7 @@ const dbMain = {
 			border: 'none',
     	    padding: '0',
         	cursor: 'pointer',
+			width: '100%',
 		},
         typ: 'button',
     },

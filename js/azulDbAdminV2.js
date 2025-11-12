@@ -18,20 +18,18 @@ async function postData(url, data) {
   }
 };
 
-const dbCmd ={
 
-	rendCmd() {
-		dbMain.butNavObj.textContent = 'list';
-        this.navBut1 = azul.addElement(this.butNavObj);
-        const item1 = azul.addElement(this.itemObj);
-        item1.appendChild(this.navBut1);
-        dbMain.dbCmd.appendChild(item1);
+const dbData = {
+	state: 'init',
 
-	},
-};
-
-
-const dbDispPers = {
+    parObj: {
+        typ: 'h2',
+        textContent: 'Add New Person',
+        style: {
+            margin: 'auto',
+            textAlign: 'center',
+         },
+    },
 
     subButRObj: {
         text: 'submit test',
@@ -42,6 +40,33 @@ const dbDispPers = {
             margin: '20px auto',
         },
     },
+
+    cmdButObj: {
+        style: {
+            background: 'none',
+ //           border: '1px solid black',
+			border: 'none',
+//           padding: '0 10px 0 10px',
+			padding: '0',
+            cursor: 'pointer',
+			width: '100%',
+        },
+        typ: 'button',
+    },
+
+    itemObj: {
+        style: {
+            border: '1px dashed orange',
+            margin: '5px',
+            minWidth: '100px',
+            textAlign: 'center',
+            },
+        typ: 'div',
+	},
+};
+
+const dbDispPers = {
+
 
     gridObj: {
         nrow: 3,
@@ -65,25 +90,6 @@ const dbDispPers = {
         },
     },
 
-    butNavObj: {
-        style: {
-            background: 'none',
-            border: '1px solid black',
-            padding: '0 10px 0 10px',
-            cursor: 'pointer',
-        },
-        typ: 'button',
-    },
-
-    itemObj: {
-        style: {
-            border: '1px dashed orange',
-            margin: '5px',
-            minWidth: '100px',
-            textAlign: 'center',
-            },
-        typ: 'div',
-	},
 
 	rendPrevNxt() {
 		const pnDiv = document.createElement('div');
@@ -91,21 +97,21 @@ const dbDispPers = {
 		pnDiv.style.border = '1px dashed green';
 		pnDiv.style.justifyContent = 'space-between';
 
-        const butNavObj1 = {textContent: 'Prev'};
-        Object.assign(butNavObj1, this.butNavObj);
-        const navBut1 = azul.addElement(butNavObj1);
+        const navBut1 = azul.addElement(dbData.cmdButObj);
+		navBut1.textContent = 'Prev';
+		navBut1.addEventListener('click',dbDispPers.dispPrev);
         this.navBut1 = navBut1;
 
-        const butNavObj2 = {textContent: 'Next'};
-		Object.assign(butNavObj2, this.butNavObj);
-        const navBut2 = azul.addElement(butNavObj2);
+		const navBut2 = azul.addElement(dbData.cmdButObj);
+		navBut2.textContent = 'Next';
+		navBut2.addEventListener('click',dbDispPers.dispNext);
         this.navBut2 = navBut2;
 
-		let item1 = azul.addElement(this.itemObj);
+		const item1 = azul.addElement(dbData.itemObj);
         item1.appendChild(navBut1);
         pnDiv.appendChild(item1);
 
-        let item2 = azul.addElement(this.itemObj);
+        const item2 = azul.addElement(dbData.itemObj);
         item2.appendChild(navBut2);
         pnDiv.appendChild(item2);
 
@@ -125,8 +131,10 @@ const dbDispPers = {
         namgrid.inpEls = [];
         for (let r=0; r< this.gridObj.matrix.length; r++) {
             for (let c=0; c< this.gridObj.matrix[r].length; c++) {
-                let inpEl = new azulInp(this.gridObj.matrix[r][c]);
-                namgrid.inpEls.push(inpEl);
+				const inpObj = this.gridObj.matrix[r][c];
+                let inpEl = new azulInp(inpObj);
+				inpEl.inpDiv.inp.readOnly = true;
+				namgrid.inpEls.push(inpEl);
                 namgrid.els[r][0].appendChild(inpEl.inpDiv);
 //                namgrid.els[r].appendChild(inpel.inpDiv);
             }
@@ -134,7 +142,9 @@ const dbDispPers = {
         let elcnt = namgrid.inpEls.length
 		if (hasDat) {
 			namgrid.inpEls[0].inpDiv.inp.value = pers.First;
+//			namgrid.inpEls[0].inpDiv.inp.readonly = true;
 			namgrid.inpEls[0].inpDiv.lab.style.visibility = 'visible';
+//			namgrid.inpEls[0].inpDiv.inp.removeEventListener('click',;
 			namgrid.inpEls[1].inpDiv.inp.value = pers.Middle;
 			namgrid.inpEls[1].inpDiv.lab.style.visibility = 'visible';
 			namgrid.inpEls[2].inpDiv.inp.value = pers.Last;
@@ -158,17 +168,16 @@ const dbDispPers = {
     },
 
 	dispNext() {
-
+		console.log('Next');
 	},
 
 	dispPrev() {
-
+		console.log('Prev');
 	}
 };
 
-const dbData = {
-	state: 'new',
-	
+const dbAdd = {
+
     subButRObj: {
         text: 'submit new',
         style: {
@@ -235,7 +244,7 @@ const dbData = {
 		const subDiv = document.createElement('div');
         const subBut = new azulButton(this.subButRObj);
 		this.subButEl = subBut.el;
-        subBut.el.addEventListener('click', function() {dbNew.subFunc(dbData.gridDiv.inpEls);},false);
+        subBut.el.addEventListener('click', function() {dbAdd.subFunc(dbData.gridDiv.inpEls);},false);
 		subDiv.appendChild(subBut.el);
 //		this.subDiv= subDiv;
 		return subDiv;
@@ -277,19 +286,6 @@ const dbData = {
             }
         }
         return true;
-    },
-
-};
-
-const dbNew = {
-
-    parObj: {
-        typ: 'h2',
-        textContent: 'Add New Person',
-        style: {
-            margin: 'auto',
-            textAlign: 'center',
-         },
     },
 
     subFunc(inpdata) {
@@ -338,7 +334,7 @@ const dbNew = {
     // root is a div
     render() {
 		const root = document.createElement('div');
-        const txtel = azul.addElement(this.parObj);
+        const txtel = azul.addElement(dbData.parObj);
 		txtel.textContent = 'Add Person';
         root.appendChild(txtel);
 		const parEl = document.createElement('p');
@@ -349,31 +345,22 @@ const dbNew = {
 
 //dbData.rendGrid();
 //dbData.rendSubmit();
-        const gDiv = dbData.rendGrid();
+        const gDiv = dbAdd.rendGrid();
         root.appendChild(gDiv);
-		const subDiv = dbData.rendSubmit();
+		const subDiv = dbAdd.rendSubmit();
         root.appendChild(subDiv);
         return root;
     },
 
 	renFun() {
 		console.log('add: click!');
-		const ldiv = dbNew.render();
+		const ldiv = dbAdd.render();
 		azul.rplDiv(dbMain.dbDat, ldiv);
 		dbData.state = 'add';
 	}
 };
 
 const dbList = {
-
-    parObj: {
-        typ: 'h2',
-        textContent: 'Person List',
-        style: {
-            margin: 'auto',
-            textAlign: 'center',
-         },
-    },
 
     gridObj: {
         nrow: 2,
@@ -447,7 +434,8 @@ const dbList = {
 
 	render(list) {
 		const div = document.createElement('div')
-		const txtel = azul.addElement(this.parObj);
+		dbData.parObj.textContent = 'List of Persons';
+		const txtel = azul.addElement(dbData.parObj);
         div.appendChild(txtel);
 		this.list = list;
 		const nrows = list.length;
@@ -481,23 +469,23 @@ const dbList = {
             root.removeChild(root.firstChild);
         };
 
-        dbMain.butNavObj.textContent = 'list';
-        this.navBut1 = azul.addElement(dbMain.butNavObj);
-        const item1 = azul.addElement(dbMain.itemObj);
+        dbData.cmdButObj.textContent = 'list';
+        this.navBut1 = azul.addElement(dbData.cmdButObj);
+        const item1 = azul.addElement(dbData.itemObj);
         item1.appendChild(this.navBut1);
         root.appendChild(item1);
         this.navBut1.addEventListener('click', dbList.renFun);
 
-        dbMain.butNavObj.textContent = 'add';
-        this.navBut2 = azul.addElement(dbMain.butNavObj);
-        const item2 = azul.addElement(dbMain.itemObj);
+        dbData.cmdButObj.textContent = 'add';
+        this.navBut2 = azul.addElement(dbData.cmdButObj);
+        const item2 = azul.addElement(dbData.itemObj);
         item2.appendChild(this.navBut2);
         root.appendChild(item2);
-        this.navBut2.addEventListener('click', dbNew.renFun);
+        this.navBut2.addEventListener('click', dbAdd.renFun);
 
-        dbMain.butNavObj.textContent = 'search';
-        this.navBut3 = azul.addElement(dbMain.butNavObj);
-        const item3 = azul.addElement(dbMain.itemObj);
+        dbData.cmdButObj.textContent = 'search';
+        this.navBut3 = azul.addElement(dbData.cmdButObj);
+        const item3 = azul.addElement(dbData.itemObj);
         item3.appendChild(this.navBut3);
         root.appendChild(item3);
         this.navBut3.addEventListener('click', dbSearch.renFun);
@@ -564,17 +552,17 @@ const dbUpd = {
   		}
 	},
 
-
-
 	subFunc(inpEls) {
 		console.log('submit upd: ' + inpEls.length);
-
+		const pers = dbData.pers;
         const inpKV = {};
 		inpKV['cmd'] = 'upd';
         for (let i=0; i< inpEls.length; i++) {
             const datinp = inpEls[i].inpDiv.inp;
-            inpKV[datinp.place] = datinp.value;
+//			console.log('Pers ' + datinp.place + ': ' + pers[datinp.place] + ' :' + datinp.value);
+			if (pers[datinp.place] != datinp.value) {inpKV[datinp.place] = datinp.value;}
         }
+		inpKV['Id'] = pers.Id.toString();
         let sndDat = JSON.stringify(inpKV);
         console.log('inpkv: ' + sndDat);
         // send data
@@ -586,7 +574,7 @@ const dbUpd = {
         const subBut = new azulButton(dbData.subButRObj);
 		this.subButEl = subBut.el;
 		subBut.el.textContent = 'submit update';
-        subBut.el.addEventListener('click', function() {dbUpd.subFunc(dbData.gridDiv.inpEls);},false);
+        subBut.el.addEventListener('click', function() {dbUpd.subFunc(dbAdd.gridDiv.inpEls);},false);
 		subDiv.appendChild(subBut.el);
 //		this.subDiv= subDiv;
 		return subDiv;
@@ -595,8 +583,8 @@ const dbUpd = {
 
     render() {
 		const root = document.createElement('div')
-		dbNew.parObj.textContent = 'Update Person';
-        const txtel = azul.addElement(dbNew.parObj);
+        const txtel = azul.addElement(dbData.parObj);
+		txtel.textContent = 'Update Person';
         root.appendChild(txtel);
 		this.parEl = document.createElement('p');
 		this.parEl.style.margin='10px';
@@ -610,7 +598,7 @@ const dbUpd = {
 		root.appendChild(this.parEl);
 		this.Status = this.parEl;
 //upd
-		const namgrid = dbData.rendGrid();
+		const namgrid = dbAdd.rendGrid();
 			namgrid.inpEls[0].inpDiv.inp.value = pers.First;
 			namgrid.inpEls[0].inpDiv.lab.style.visibility = 'visible';
 			namgrid.inpEls[1].inpDiv.inp.value = pers.Middle;
@@ -636,18 +624,18 @@ const dbUpd = {
 		};
 
 		dbMain.butNavObj.textContent = 'list';
-        this.navBut1 = azul.addElement(dbMain.butNavObj);
-        const item1 = azul.addElement(dbMain.itemObj);
+        this.navBut1 = azul.addElement(dbData.cmdButObj);
+        const item1 = azul.addElement(dbData.itemObj);
         item1.appendChild(this.navBut1);
         root.appendChild(item1);
 		this.navBut1.addEventListener('click', dbList.renFun);
 
 		dbMain.butNavObj.textContent = 'add';
-        this.navBut2 = azul.addElement(dbMain.butNavObj);
-        const item2 = azul.addElement(dbMain.itemObj);
+        this.navBut2 = azul.addElement(dbData.cmdButObj);
+        const item2 = azul.addElement(dbData.itemObj);
         item2.appendChild(this.navBut2);
         root.appendChild(item2);
-		this.navBut2.addEventListener('click', dbNew.renFun);
+		this.navBut2.addEventListener('click', dbAdd.renFun);
 	},
 
 	renFun() {
@@ -710,7 +698,7 @@ const dbSearch = {
         const subBut = new azulButton(dbData.subButRObj);
 //		this.subButEl = subBut.el;
 		subBut.el.textContent = 'submit search';
-        subBut.el.addEventListener('click', function() {dbSearch.subFunc(dbData.gridDiv.inpEls);},false);
+        subBut.el.addEventListener('click', function() {dbSearch.subFunc(dbAdd.gridDiv.inpEls);},false);
 		subDiv.appendChild(subBut.el);
 //		this.subDiv= subDiv;
 		return subDiv;
@@ -718,15 +706,15 @@ const dbSearch = {
 
 	render() {
 		const root = document.createElement('div')
-		dbNew.parObj.textContent = 'Search Person';
-        const txtel = azul.addElement(dbNew.parObj);
+        const txtel = azul.addElement(dbData.parObj);
+		txtel.textContent = 'Search for Person';
         root.appendChild(txtel);
 		const parEl = document.createElement('p');
 		parEl.style.margin='10px';
 		parEl.textContent = 'Status: not submitted';
 		root.appendChild(parEl);
 
-		const namgrid = dbData.rendGrid();
+		const namgrid = dbAdd.rendGrid();
 //			namgrid.inpEls[0].inpDiv.inp.value = pers.First;
 			namgrid.inpEls[0].inpDiv.inp.value = '';
 //			namgrid.inpEls[0].inpDiv.lab.style.visibility = 'visible';
@@ -758,15 +746,15 @@ const dbSearch = {
 		};
 
 		dbMain.butNavObj.textContent = 'list';
-        this.navBut1 = azul.addElement(dbMain.butNavObj);
-        const item1 = azul.addElement(dbMain.itemObj);
+        this.navBut1 = azul.addElement(dbData.cmdButObj);
+        const item1 = azul.addElement(dbData.itemObj);
         item1.appendChild(this.navBut1);
         root.appendChild(item1);
 		this.navBut1.addEventListener('click', dbList.renFun);
 
 		dbMain.butNavObj.textContent = 'update';
-        this.navBut2 = azul.addElement(dbMain.butNavObj);
-        const item2 = azul.addElement(dbMain.itemObj);
+        this.navBut2 = azul.addElement(dbData.cmdButObj);
+        const item2 = azul.addElement(dbData.itemObj);
         item2.appendChild(this.navBut2);
         root.appendChild(item2);
 		this.navBut2.addEventListener('click', dbUpd.renFun);
@@ -785,8 +773,8 @@ const dbSearch = {
 const dbDisp = {
     render(pers) {
 		const root = document.createElement('div')
-		dbNew.parObj.textContent = 'Display Person';
-        const txtel = azul.addElement(dbNew.parObj);
+        const txtel = azul.addElement(dbData.parObj);
+		txtel.textContent = 'Display Person';
         root.appendChild(txtel);
 		const parEl = document.createElement('p');
 		parEl.style.margin='10px';
@@ -797,9 +785,7 @@ const dbDisp = {
 		root.appendChild(divPN);
   		const gdiv = dbDispPers.rendGrid(pers);
 		root.appendChild(gdiv);
-//		const subDiv = dbData.subDiv;
-//        root.appendChild(subDiv);
-
+		this.Pers = pers;
         return root;
     },
 
@@ -810,32 +796,39 @@ const dbDisp = {
             root.removeChild(root.firstChild);
 		};
 
-		dbMain.butNavObj.textContent = 'list';
-        this.navBut1 = azul.addElement(dbMain.butNavObj);
-        const item1 = azul.addElement(dbMain.itemObj);
+		dbData.cmdButObj.textContent = 'list';
+        this.navBut1 = azul.addElement(dbData.cmdButObj);
+        const item1 = azul.addElement(dbData.itemObj);
         item1.appendChild(this.navBut1);
         root.appendChild(item1);
 		this.navBut1.addEventListener('click', dbList.renFun);
 
-		dbMain.butNavObj.textContent = 'update';
-        this.navBut2 = azul.addElement(dbMain.butNavObj);
-        const item2 = azul.addElement(dbMain.itemObj);
+		dbData.cmdButObj.textContent = 'update';
+        this.navBut2 = azul.addElement(dbData.cmdButObj);
+        const item2 = azul.addElement(dbData.itemObj);
         item2.appendChild(this.navBut2);
         root.appendChild(item2);
 		this.navBut2.addEventListener('click', dbUpd.renFun)
+
+		dbData.cmdButObj.textContent = 'show Notes';
+        this.navBut3 = azul.addElement(dbData.cmdButObj);
+        const item3 = azul.addElement(dbData.itemObj);
+        item3.appendChild(this.navBut3);
+        root.appendChild(item3);
+		this.navBut3.addEventListener('click', dbNotes.renfun)
 
 	},
 
 	renFun(pers) {
 		console.log('disp: click!');
-		const ldiv = dbDisp.render(pers);
-		azul.rplDiv(dbMain.dbDat, ldiv);
+		dbDisp.ldiv = dbDisp.render(pers);
+		azul.rplDiv(dbMain.dbDat, dbDisp.ldiv);
 		dbDisp.rendCmd();
 		dbData.state = 'disp';
 	}
 };
 
 dbMain.navBut1.addEventListener('click', dbList.renFun);
-dbMain.navBut2.addEventListener('click',dbNew.renFun);
+dbMain.navBut2.addEventListener('click',dbAdd.renFun);
 //dbMain.navBut3.addEventListener('click',dbUpd.renFun);
 dbMain.navBut4.addEventListener('click', dbSearch.renFun);
