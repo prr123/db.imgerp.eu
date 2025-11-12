@@ -580,7 +580,6 @@ const dbUpd = {
 		return subDiv;
 	},
 
-
     render() {
 		const root = document.createElement('div')
         const txtel = azul.addElement(dbData.parObj);
@@ -660,7 +659,7 @@ const dbSearch = {
 				this.parEl.textContent = 'Status: search success!'
 				const list = await response.json();
 				const ldiv = dbList.render(list);
-				azul.rplDiv(azulSPA.db, ldiv);
+				azul.rplDiv(dbMain.dbDat, ldiv);
 				return;
 			// disable submit
 //				this.subButEl.disabled = true;
@@ -668,8 +667,8 @@ const dbSearch = {
      			console.error('Error ' + response.status + ': ' + response.statusText);
 				this.parEl.textContent = 'Status: error -- ' + response.statusText;
     		}
-  		} catch (error) {
-    		console.error('Error:', error.message);
+ 		} catch (error) {
+    		console.error('Error: ' + error.message);
 			this.parEl.textContent = 'Status: error -- ' + error.message;
   		}
 	},
@@ -679,14 +678,17 @@ const dbSearch = {
 	subFunc(inpEls) {
 		console.log('submit search: ' + inpEls.length);
 
+//		const pers = dbData.pers;
         const inpKV = {};
 		inpKV['cmd'] = 'se';
         for (let i=0; i< inpEls.length; i++) {
             const datinp = inpEls[i].inpDiv.inp;
-            inpKV[datinp.place] = datinp.value;
+//			console.log('Pers ' + datinp.place + ': ' + pers[datinp.place] + ' :' + datinp.value);
+			if (datinp.value.length > 0) {inpKV[datinp.place] = datinp.value;}
         }
+//		inpKV['Id'] = pers.Id.toString();
         let sndDat = JSON.stringify(inpKV);
-        console.log('inpkv: ' + sndDat);
+        console.log('search: ' + sndDat);
         // send data
         this.postDat('/db/person.json',sndDat);
     },
@@ -713,6 +715,7 @@ const dbSearch = {
 		parEl.style.margin='10px';
 		parEl.textContent = 'Status: not submitted';
 		root.appendChild(parEl);
+		this.parEl = parEl;
 
 		const namgrid = dbAdd.rendGrid();
 //			namgrid.inpEls[0].inpDiv.inp.value = pers.First;
