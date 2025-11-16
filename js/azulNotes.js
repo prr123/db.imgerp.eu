@@ -7,6 +7,17 @@ const dbNotes = {
 		},
 	},
 
+	noteTxtObj: {
+		typ: 'textarea',
+		rows: 5,
+		style: {
+			width: '98%',
+			margin: '10px 1% 10px 1%',
+//			padding: '5px',
+			border: '1px dashed red',
+		},
+	},
+
 	flexObj: {
 		typ: 'div',
 		style: {
@@ -46,16 +57,22 @@ const dbNotes = {
 		root.appendChild(nam);
         const divPN = dbDispPers.rendPrevNxt()
         root.appendChild(divPN);
-		const notes = dbNotes.addNotes();
-		root.appendChild(notes);
+		this.notesRoot = document.createElement('div');
+		root.appendChild(this.notesRoot);
+//		const notes = dbNotes.showNotes();
+//		root.appendChild(notes);
 		azul.rplDiv(dbMain.dbDat, root);
 	},
 
-	addNotes() {
+	showNotes() {
 		const nroot = azul.addElement(this.noteObj);
 		const datper = document.createElement('p');
 		datper.textContent = 'Date: ';
 		nroot.appendChild(datper);
+
+		const txtAr = azul.addElement(this.noteTxtObj);
+		nroot.appendChild(txtAr);
+/*
 		const br = document.createElement('br');
 		nroot.appendChild(br);
 		const dattxt = document.createElement('p');
@@ -64,13 +81,101 @@ const dbNotes = {
 		const dattxt2 = document.createElement('p');
 		dattxt2.textContent = 'more text.\n';
 		nroot.appendChild(dattxt2);
+*/
+		azul.rplDiv(this.notesRoot, nroot);
+
 		return nroot;
 	},
 
+	dispNotes(nlist) {
+		console.log('note list: ' + nlist.length);
+		const liDiv = document.createElement('div');
+
+		return liDiv;
+	},
+
+    async getNotes() {
+        const url = '/db/person.json';
+ 		const pers = dbData.pers;
+		const pidstr = pers.Id.toString();
+		const cmd = '{"cmd":"liN","pid":"' + pidstr + '"}';
+		console.log('dbg -- cmd: ' + cmd);
+        try {
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json',},
+                body: cmd,
+            });
+
+            if (response.ok) {
+                console.log('Post Reply Success');
+                const nlist = await response.json();
+                const ldiv = dbNotes.dispNotes(nlist);
+//              azul.rplDiv(azulSPA.db, ldiv);
+                azul.rplDiv(dbMain.dbDat, ldiv);
+                return;
+            } else {
+                console.error('Error: ' + response.status + ', ' + response.statusText);
+            }
+        } catch (error) {
+            console.error('Error: ' + error.message);
+        }
+
+    },
+
 	rendAddNote() {
 		console.log('add note')
+		const nroot = azul.addElement(dbNotes.noteObj);
+		const datper = document.createElement('p');
+		datper.textContent = 'Date: ';
+		nroot.appendChild(datper);
+		const txtDiv = document.createElement('div');
+		txtDiv.style.border = '1px solid black';
+		const txtAr = azul.addElement(dbNotes.noteTxtObj);
+		dbNotes.newNote = txtAr;
+		txtDiv.appendChild(txtAr);
+		nroot.appendChild(txtDiv);
+		const subDiv = document.createElement('div');
+        const subBut = new azulButton(dbData.subButRObj);
+        this.subButEl = subBut.el;
+        subBut.el.textContent = 'submit Note';
+        subBut.el.addEventListener('click', function() {dbNotes.addNote();},false);
+        subDiv.appendChild(subBut.el);
+		nroot.appendChild(subDiv);
 
+		azul.rplDiv(dbNotes.notesRoot, nroot);
 	},
+
+    async addNote() {
+		console.log('addNote: submitted new note');
+		console.log('new text: \n' + dbNotes.newNote.value + '\n');
+        const url = '/db/person.json';
+ 		const pers = dbData.pers;
+		const pidstr = pers.Id.toString();
+
+		const cmd = '{"cmd":"addN","pid":"' + pidstr + '","txt":"' + dbNotes.newNote.value + '"}';
+		console.log('dbg -- cmd: ' + cmd);
+        try {
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json',},
+                body: cmd,
+            });
+
+            if (response.ok) {
+                console.log('Post Reply Success');
+//                const nlist = await response.json();
+//                const ldiv = dbNotes.dispNotes(nlist);
+//              azul.rplDiv(azulSPA.db, ldiv);
+//                azul.rplDiv(dbMain.dbDat, ldiv);
+                return;
+            } else {
+                console.error('Error: ' + response.status + ', ' + response.statusText);
+            }
+        } catch (error) {
+            console.error('Error: ' + error.message);
+        }
+    },
 
 	rendUpdNote() {
 		console.log('upd note')
@@ -98,7 +203,7 @@ const dbNotes = {
         const item2 = azul.addElement(dbData.itemObj);
         item2.appendChild(this.navBut2);
         root.appendChild(item2);
-        this.navBut2.addEventListener('click', dbNotes.renFun);
+        this.navBut2.addEventListener('click', dbNotes.getNotes);
 
 //        dbMain.butNavObj.textContent = 'edit Note';
         this.navBut3 = azul.addElement(dbData.cmdButObj);
@@ -117,19 +222,14 @@ const dbNotes = {
         this.navBut4.addEventListener('click', dbNotes.rendAddNote);
 	},
 
-	renfun() {
+	renFun() {
 		console.log("show notes");
 		dbNotes.renCmd();
 		dbNotes.render();
+		dbData.state = 'dispNotes';
 		console.log("pers: " + dbDisp.Pers.First);
 	},
 
 };
 
 
-
-
-
-//dbDisp.navBut3.addEventListener('click', dbNotes.renfun);
-//if (dbDisp === null) 
-//setTimeout(dbDisp.navBut3.addEventListener('click', dbNotes.renfun), 200);
