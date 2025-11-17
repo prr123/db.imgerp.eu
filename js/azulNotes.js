@@ -30,10 +30,17 @@ const dbNotes = {
 	namList: [{Field: 'First', Length: '150px', idx: 1, Req: true},{Field: 'Middle', Length: '200px', idx: 2},{Field: 'Last', Length: '200px', idx: 3, Req: true},
 	{Field: 'Email', Length: '350px', idx: 4, Req: true}],
 
+	dtformat(dateStr) {
+		const dateTime = dateStr.split("T");
+		const date = dateTime[0].split("-");
+		const timl = dateTime[1].split(".");
+      return `${date[2]}.${date[1]}.${date[0]} ${timl[0]}`;
+    },
+
 	render() {
 		const root = document.createElement('div');
         const txtel = azul.addElement(dbData.parObj);
-		txtel.textCntent = 'Notes';
+		txtel.textContent = 'Notes';
         root.appendChild(txtel);
 		const nam = azul.addElement(this.flexObj);
 		nam.inpEls = [];
@@ -71,26 +78,33 @@ const dbNotes = {
 		nroot.appendChild(datper);
 
 		const txtAr = azul.addElement(this.noteTxtObj);
-		nroot.appendChild(txtAr);
-/*
-		const br = document.createElement('br');
-		nroot.appendChild(br);
-		const dattxt = document.createElement('p');
-		dattxt.textContent = 'a pargraph of text.\n';
-		nroot.appendChild(dattxt);
-		const dattxt2 = document.createElement('p');
-		dattxt2.textContent = 'more text.\n';
-		nroot.appendChild(dattxt2);
-*/
+
 		azul.rplDiv(this.notesRoot, nroot);
 
+		nroot.appendChild(txtAr);
 		return nroot;
 	},
 
 	dispNotes(nlist) {
 		console.log('note list: ' + nlist.length);
 		const liDiv = document.createElement('div');
-
+		const par = document.createElement('p');
+		par.textContent = 'note list: ' + nlist.length;
+		for (let i=0; i< nlist.length; i++) {
+			const ndiv = azul.addElement(dbNotes.noteObj);
+			const datePar = document.createElement('p');
+			const dattim = dbNotes.dtformat(nlist[i].Cre);
+			datePar.textContent = 'Date: ' + dattim + '\n';
+			ndiv.appendChild(datePar);
+			const txtDiv = document.createElement('div');
+			txtDiv.style.border = '1px solid black';
+			const txtAr = azul.addElement(dbNotes.noteTxtObj);
+			txtAr.value = nlist[i].Txt;
+			txtAr.readOnly = true;
+			txtDiv.appendChild(txtAr);
+			ndiv.appendChild(txtDiv);
+			liDiv.appendChild(ndiv);
+		}
 		return liDiv;
 	},
 
@@ -111,8 +125,8 @@ const dbNotes = {
                 console.log('Post Reply Success');
                 const nlist = await response.json();
                 const ldiv = dbNotes.dispNotes(nlist);
-//              azul.rplDiv(azulSPA.db, ldiv);
-                azul.rplDiv(dbMain.dbDat, ldiv);
+//				this.nlist = nlist;
+                azul.rplDiv(dbNotes.notesRoot, ldiv);
                 return;
             } else {
                 console.error('Error: ' + response.status + ', ' + response.statusText);
@@ -142,7 +156,11 @@ const dbNotes = {
         subBut.el.addEventListener('click', function() {dbNotes.addNote();},false);
         subDiv.appendChild(subBut.el);
 		nroot.appendChild(subDiv);
-
+		for (const child of dbNotes.notesRoot.children) {
+			//console.log(child.tagName);
+			nroot.appendChild(child);
+		}
+// 		while (dbNotesnotesRoot.hasChildNodes()) {nroot.appendChild();}
 		azul.rplDiv(dbNotes.notesRoot, nroot);
 	},
 
@@ -163,11 +181,9 @@ const dbNotes = {
             });
 
             if (response.ok) {
-                console.log('Post Reply Success');
-//                const nlist = await response.json();
-//                const ldiv = dbNotes.dispNotes(nlist);
-//              azul.rplDiv(azulSPA.db, ldiv);
-//                azul.rplDiv(dbMain.dbDat, ldiv);
+                console.log('Post addNote Success');
+				dbNotes.getNotes();
+
                 return;
             } else {
                 console.error('Error: ' + response.status + ', ' + response.statusText);
@@ -177,10 +193,67 @@ const dbNotes = {
         }
     },
 
-	rendUpdNote() {
-		console.log('upd note')
+	toHash(string) {
+    	let hash = 0;
+    	if (string.length == 0) return hash;
+    	for (i = 0; i < string.length; i++) {
+        	char = string.charCodeAt(i);
+        	hash = ((hash << 5) - hash) + char;
+        	hash = hash & hash;
+    	}
+    	return hash;
 	},
 
+
+	rendUpdNote() {
+		console.log('upd note')
+		// check note status
+//		const num = dbNotes.notesRoot.childElementCount;
+//		console.log('upd -- children: ' + num);
+		const nodePar = dbNotes.notesRoot.children[0];
+		const num2 = nodePar.childElementCount;
+		console.log('upd -- children lev 2: ' + num2);
+
+		let hashList = [];
+		for (let i=0; i<num2; i++) {
+			const divEl = nodePar.children[i];
+			const txtDiv = divEl.children[1];
+			const txtEl = txtDiv.children[0];
+			const hash = dbNotes.toHash(txtEl.value);
+			hashList.push(hash);
+//			console.log(i + ': ' + hashList[i]);
+			txtEl.readOnly = false;
+		}
+		// add submit button
+		const parDiv = dbNotes.notesRoot.parentNode;
+		const subDiv = document.createElement('div');
+        const subBut = new azulButton(dbData.subButRObj);
+        this.subButEl = subBut.el;
+        subBut.el.textContent = 'submit updates';
+        subBut.el.addEventListener('click', function() {dbNotes.subNoteUpd(parDiv, subDiv);},false);
+        subDiv.appendChild(subBut.el);
+		parDiv.insertBefore(subDiv, dbNotes.notesRoot);
+	},
+
+	subNoteUpd(parDiv, subDiv) {
+		console.log('submitted update!');
+		parDiv.removeChild(subDiv);
+        const nodePar = dbNotes.notesRoot.children[0];
+        const num2 = nodePar.childElementCount;
+        console.log('upd -- children lev 2: ' + num2);
+
+		let nhashList = [];
+		for (let i=0; i<num2; i++) {
+            const divEl = nodePar.children[i];
+            const txtDiv = divEl.children[1];
+            const txtEl = txtDiv.children[0];
+			const hash = dbNotes.toHash(txtEl.value);
+			nhashList.push(hash);
+//        	console.log(i + ': ' + txtEl.value);
+        }
+
+		dbNotes.getNotes();
+	},
 
 	renCmd() {
 
@@ -226,6 +299,7 @@ const dbNotes = {
 		console.log("show notes");
 		dbNotes.renCmd();
 		dbNotes.render();
+		dbNotes.getNotes();
 		dbData.state = 'dispNotes';
 		console.log("pers: " + dbDisp.Pers.First);
 	},

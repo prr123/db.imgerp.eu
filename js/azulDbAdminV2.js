@@ -818,7 +818,7 @@ const dbDisp = {
         const item3 = azul.addElement(dbData.itemObj);
         item3.appendChild(this.navBut3);
         root.appendChild(item3);
-		this.navBut3.addEventListener('click', dbNotes.renfun)
+		this.navBut3.addEventListener('click', dbNotes.renFun)
 
 	},
 
