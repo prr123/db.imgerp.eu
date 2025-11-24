@@ -125,7 +125,7 @@ const dbNotes = {
                 console.log('Post Reply Success');
                 const nlist = await response.json();
                 const ldiv = dbNotes.dispNotes(nlist);
-//				this.nlist = nlist;
+				dbNotes.nList = nlist;
                 azul.rplDiv(dbNotes.notesRoot, ldiv);
                 return;
             } else {
@@ -193,7 +193,7 @@ const dbNotes = {
         }
     },
 
-	toHash(string) {
+	calcHash(string) {
     	let hash = 0;
     	if (string.length == 0) return hash;
     	for (i = 0; i < string.length; i++) {
@@ -219,11 +219,12 @@ const dbNotes = {
 			const divEl = nodePar.children[i];
 			const txtDiv = divEl.children[1];
 			const txtEl = txtDiv.children[0];
-			const hash = dbNotes.toHash(txtEl.value);
+			const hash = dbNotes.calcHash(txtEl.value);
 			hashList.push(hash);
 //			console.log(i + ': ' + hashList[i]);
 			txtEl.readOnly = false;
 		}
+		dbNotes.orgHash = hashList;
 		// add submit button
 		const parDiv = dbNotes.notesRoot.parentNode;
 		const subDiv = document.createElement('div');
@@ -235,24 +236,54 @@ const dbNotes = {
 		parDiv.insertBefore(subDiv, dbNotes.notesRoot);
 	},
 
-	subNoteUpd(parDiv, subDiv) {
+	async subNoteUpd(parDiv, subDiv) {
 		console.log('submitted update!');
+        const url = '/db/person.json';
+ 		const pers = dbData.pers;
+		const pidstr = pers.Id.toString();
+//		const cmd = '{"cmd":"liN","pid":"' + pidstr + '"}';
 		parDiv.removeChild(subDiv);
         const nodePar = dbNotes.notesRoot.children[0];
         const num2 = nodePar.childElementCount;
-        console.log('upd -- children lev 2: ' + num2);
+        console.log('updN -- children lev 2: ' + num2);
 
-		let nhashList = [];
+//		const cmd = '{"cmd":"addN","pid":"' + pidstr + '","txt":"' + dbNotes.newNote.value + '"}';
+		let cmdStr = '{"cmd":"updN","pid":"' + pidstr + '","notes":"[';
 		for (let i=0; i<num2; i++) {
             const divEl = nodePar.children[i];
             const txtDiv = divEl.children[1];
             const txtEl = txtDiv.children[0];
-			const hash = dbNotes.toHash(txtEl.value);
-			nhashList.push(hash);
+			const hash = dbNotes.calcHash(txtEl.value);
 //        	console.log(i + ': ' + txtEl.value);
-        }
+			if (hash != dbNotes.orgHash[i]) {
+				idStr = dbNotes.nList[i].Id;
+//				txtStr = dbNotes.nList[i].Txt;
+				txtStr = txtEl.value;
+				cmdStr += '{\\\"id\\\":' + idStr + ',\\\"txt\\\":\\\"' + txtStr + '\\\"},'
+			}
+		}
+		cmdStr = cmdStr.slice(0, -1);
+		cmdStr += ']"}';
+		console.log("upd: " + cmdStr);
+// submit command and get response
+        try {
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json',},
+                body: cmdStr,
+            });
 
-		dbNotes.getNotes();
+            if (response.ok) {
+                console.log('Post upd Notes Success');
+				dbNotes.getNotes();
+                return;
+            } else {
+                console.error('Error: ' + response.status + ', ' + response.statusText);
+            }
+        } catch (error) {
+            console.error('Error: ' + error.message);
+        }
+//		dbNotes.getNotes();
 	},
 
 	renCmd() {
